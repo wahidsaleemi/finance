@@ -1,5 +1,6 @@
 ﻿[CmdletBinding()]
-
+#Must use Desktop edition, HTML Parsing require Internet Explorer
+#Requires -PSEdition Desktop
 Param(
 $inputFile = ".\vvsymbols.csv",
 $outputFile = ".\twssymbols.csv",
@@ -13,10 +14,14 @@ function Remove-ClosebyEarnings($symbols)
     {
         
         $symbols | ForEach-Object {
-                $result = Invoke-WebRequest "https://stocksearning.com/q.aspx?Sys=$_" -Method Get
+                Write-Verbose "Retrieving symbol information from stocksearning.com..."
+                $result = Invoke-WebRequest "https://stocksearning.com/q.aspx?Sys=$_" -Method Get -TimeoutSec 5
+                Write-Verbose "Done accessing stocksearning.com!"
+                Write-Verbose "Parsing results..."
                 $text = $result.AllElements |
-                    Where-Object Class -eq "upcoming-predicationbox detailcontainer" |
-                    Select -First 1 -ExpandProperty innerText
+                    Where-Object Class -eq "upcoming-predicationbox detailcontainer detail-topspace" |
+                    Select-Object -First 1 -ExpandProperty innerText
+                Write-Verbose "Cleaning earnings data..."
                 $earningsDescription = $text.Split("`n") | select-string "Earnings Date" #Find the earnings date ("Earnings Date : Wed 17 Jan (In 91 Days)")
                 
                 if ($earningsDescription -like "*To*")
@@ -24,7 +29,8 @@ function Remove-ClosebyEarnings($symbols)
                         Write-Host "$_ has earnings today or tomorrow. Removing from list." -ForegroundColor Yellow
                     }
                 else {
-                        $earningsDays = $earningsDescription.ToString().Split("(")[1].Split(")")[0]
+                        Write-Verbose "Getting number of days until earnings..."
+                        $earningsDays = $earningsDescription[0].ToString().Split("(")[1].Split(")")[0]
                         [int]$numOfDays = $earningsDays.Replace("In ","").Replace(" Days","")
                         if ($numOfDays -ge 14)
                             {
@@ -40,15 +46,19 @@ function Remove-ClosebyEarnings($symbols)
         return $cleansymbols
     }
 
+
 #Get the VectorVest Watchlist
+Write-Verbose "Reading input file: $inputfile..."
 $symbols = Get-Content $inputFile
 
 #Remove top row
+Write-Verbose "Removing heading from CSV..."
 $symbols = ($symbols[1..($symbols.Count -1)])
 
 #Clean up earnings
 if ($CheckEarnings)
     {
+        Write-Host "-CheckEarnings switch specified. Running function"
         $cleansymbols = Remove-ClosebyEarnings -symbols $symbols
     }
 else
