@@ -56,6 +56,8 @@ Write-Verbose "Removing heading from CSV..."
 $symbols = ($symbols[1..($symbols.Count -1)])
 
 #Clean up earnings
+##NOTE, because of cookie warning, we need add modify registry
+## Use: reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings\Zones\3" /t REG_DWORD /v 1A10 /f /d 0
 if ($CheckEarnings)
     {
         Write-Host "-CheckEarnings switch specified. Running function"
