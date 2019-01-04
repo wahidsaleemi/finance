@@ -15,10 +15,22 @@ It takes seconds to convert.
 
 If you've never used PowerShell on your system, you may get an error about unsigned scripts. Just open PowerShell as an Administrator and type:
 
-    Set-ExecutionPolicy Unrestricted -Scope CurrentUser
-    
+````PowerShell
+Set-ExecutionPolicy Unrestricted -Scope CurrentUser
+````
+
 For more info see:  https://docs.microsoft.com/en-au/powershell/module/microsoft.powershell.core/about/about_execution_policies
 
 Because of cookie warning, we need to add a Current User Registry setting. Run the following (in an Administrator Command Prompt):
 
     reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings\Zones\3" /t REG_DWORD /v 1A10 /f /d 0
+
+## Usage
+
+It's best to specify the input and output files. For example:
+
+````PowerShell
+.\ConvertTo-TWS.ps1 -inputFile C:\Downloads\vvsymbols.csv -outputFile C:\Downloads\twssymbols.csv -CheckEarnings -Verbose
+````
+
+The -CheckEarnings switch now uses earningswhisper.com. If it doesn't work or you prefer stocksearnings.com, just pass -UseLegacyEarningsSource. The legacy source is much slower.
