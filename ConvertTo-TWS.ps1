@@ -52,7 +52,7 @@ function Remove-NearEarnings($symbols)
         
         $symbols | ForEach-Object {
                 Write-Verbose "Retrieving symbol information from earningswhispers.com..."
-                $result = Invoke-RestMethod "https://beta.earningswhispers.com/jsdata/ical.aspx?symbol=$stockSymbol" -Method Get | ConvertFrom-Csv -Delimiter ":"
+                $result = Invoke-RestMethod "https://beta.earningswhispers.com/jsdata/ical.aspx?symbol=$_" -Method Get | ConvertFrom-Csv -Delimiter ":"
                 Write-Verbose "Done accessing stocksearning.com!"
                 $text = $result | Where-Object {$_.BEGIN -eq "DTSTART"} | Select-Object -ExpandProperty VCALENDAR
                 Write-Verbose "Parsing results..."
